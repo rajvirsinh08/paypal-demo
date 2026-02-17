@@ -14,9 +14,7 @@ app.use(express.json());
 /* ================================
    ✅ MongoDB Direct Connection
 ================================= */
-
-mongoose
-  .connect("mongodb://127.0.0.1:27017/paypalDemo")
+mongoose.connect(process.env.MONGODB_URI!)
   .then(() => {
     console.log("✅ MongoDB Connected Successfully");
   })
@@ -28,8 +26,4 @@ mongoose
 
 app.use("/api/payment", paymentRoutes);
 
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+export default app;

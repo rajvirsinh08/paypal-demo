@@ -34,8 +34,10 @@ function App() {
   return (
     <PayPalScriptProvider
       options={{
-        clientId:
-          "AauEc9YSgJMQiShlP-yRfIw3PLrhbvFVjsl8ZhWZ0TYR22ScbZMsgYI_VBfndrg_o1u_judluRPROXIc",
+        // clientId:
+        //   "AauEc9YSgJMQiShlP-yRfIw3PLrhbvFVjsl8ZhWZ0TYR22ScbZMsgYI_VBfndrg_o1u_judluRPROXIc",
+        clientId: process.env.REACT_APP_PAYPAL_CLIENT_ID!,
+
         currency: "USD",
         intent: "capture",
       }}

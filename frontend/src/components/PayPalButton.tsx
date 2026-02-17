@@ -14,9 +14,10 @@ const PayPalButton: React.FC = () => {
   const [payments, setPayments] = useState<Payment[]>([]);
 
   const fetchPayments = async () => {
-    const res = await fetch(
-      "http://localhost:5000/api/payment/payments"
-    );
+  const res = await fetch(
+  `${process.env.REACT_APP_API_URL}/api/payment/payments`
+);
+
     const data = await res.json();
     setPayments(data);
   };
