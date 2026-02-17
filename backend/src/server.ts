@@ -23,6 +23,9 @@ mongoose.connect(process.env.MONGODB_URI!)
   });
 
 /* ================================ */
+app.get("/", (req, res) => {
+  res.send("🚀 PayPal Backend API is running");
+});
 
 app.use("/api/payment", paymentRoutes);
 
