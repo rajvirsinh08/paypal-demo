@@ -15,6 +15,7 @@ interface Payment {
 function App() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [show, setShow] = useState(false);
+const API_URL = process.env.REACT_APP_API_URL!;
 
   const fetchPayments = async () => {
 const API_URL = process.env.REACT_APP_API_URL;
@@ -96,24 +97,31 @@ const res = await fetch(`${API_URL}/api/payment/payments`);
               </p>
 
               <div style={{ marginTop: 30 }}>
-                <PayPalButtons
-                  style={{ layout: "vertical" }}
-                  createOrder={async () => {
-                    const res = await fetch(
-                      "http://localhost:5000/api/payment/create-order",
-                      { method: "POST" }
-                    );
-                    const data = await res.json();
-                    return data.id;
-                  }}
-                  onApprove={async (data) => {
-                    await fetch(
-                      `http://localhost:5000/api/payment/capture-order/${data.orderID}`,
-                      { method: "POST" }
-                    );
-                    fetchPayments();
-                  }}
-                />
+             <PayPalButtons
+  style={{ layout: "vertical" }}
+  createOrder={async () => {
+    const res = await fetch(
+      `${API_URL}/api/payment/create-order`,
+      { method: "POST" }
+    );
+
+    if (!res.ok) {
+      throw new Error("Failed to create order");
+    }
+
+    const data = await res.json();
+    return data.id;
+  }}
+  onApprove={async (data) => {
+    await fetch(
+      `${API_URL}/api/payment/capture-order/${data.orderID}`,
+      { method: "POST" }
+    );
+
+    fetchPayments();
+  }}
+/>
+
               </div>
             </div>
 
