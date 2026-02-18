@@ -14,13 +14,20 @@ app.use(express.json());
 /* ================================
    ✅ MongoDB Direct Connection
 ================================= */
-mongoose.connect(process.env.MONGODB_URI!)
-  .then(() => {
-    console.log("✅ MongoDB Connected Successfully");
-  })
-  .catch((err) => {
-    console.error("❌ MongoDB Connection Failed:", err);
-  });
+
+let isConnected = false;
+
+const connectDB = async () => {
+  if (isConnected) return;
+
+  try {
+    const db = await mongoose.connect(process.env.MONGODB_URI!);
+    isConnected = db.connections[0].readyState === 1;
+    console.log("✅ MongoDB Connected");
+  } catch (error) {
+    console.error("❌ MongoDB Connection Error:", error);
+  }
+};
 
 /* ================================ */
 app.get("/", (req, res) => {
