@@ -31,15 +31,31 @@ const fetchPayments = async () => {
     const data = await res.json();
     return data.id;
   }}
-  onApprove={async (data) => {
-    await fetch(
+ onApprove={async (data) => {
+  try {
+    const res = await fetch(
       `${API_URL}/api/payment/capture-order/${data.orderID}`,
       { method: "POST" }
     );
 
-    alert("Payment Captured Successfully 🎉");
+    if (!res.ok) {
+      throw new Error("Payment capture failed");
+    }
+
+    const result = await res.json();
+
+    // ✅ Show Success Alert
+    alert("✅ Payment Captured Successfully 🎉");
+
+    // Refresh history
     fetchPayments();
-  }}
+
+  } catch (error) {
+    alert("❌ Payment Failed. Please try again.");
+    console.error(error);
+  }
+}}
+
 />
 
 

@@ -1,6 +1,7 @@
   import React, { useEffect, useState } from "react";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import CountUp from "react-countup";
+import Swal from "sweetalert2";
 
 interface Payment {
   _id: string;
@@ -97,6 +98,29 @@ const res = await fetch(`${API_URL}/api/payment/payments`);
               </p>
 
               <div style={{ marginTop: 30 }}>
+                {/* 🧪 Sandbox Credentials Card */}
+<div style={styles.sandboxCard}>
+  <h4 style={styles.sandboxTitle}>Sandbox Test Account</h4>
+
+  <div style={styles.credentialRow}>
+    <span style={styles.credentialLabel}>Email</span>
+    <span style={styles.credentialValue}>
+      sb-u3m9y49435222@personal.example.com
+    </span>
+  </div>
+
+  <div style={styles.credentialRow}>
+    <span style={styles.credentialLabel}>Password</span>
+    <span style={styles.credentialValue}>
+      eY&.!2lV
+    </span>
+  </div>
+
+  <p style={styles.sandboxNote}>
+    Use these credentials in the PayPal popup to test payments in sandbox mode.
+  </p>
+</div>
+
              <PayPalButtons
   style={{ layout: "vertical" }}
   createOrder={async () => {
@@ -112,14 +136,51 @@ const res = await fetch(`${API_URL}/api/payment/payments`);
     const data = await res.json();
     return data.id;
   }}
-  onApprove={async (data) => {
-    await fetch(
+ onApprove={async (data) => {
+  try {
+    const res = await fetch(
       `${API_URL}/api/payment/capture-order/${data.orderID}`,
       { method: "POST" }
     );
 
+    if (!res.ok) {
+      throw new Error("Payment capture failed");
+    }
+
+    const result = await res.json();
+
+    // 🔥 Professional Enterprise Success Modal
+    await Swal.fire({
+      title: "Payment Completed",
+      html: `
+        <div style="text-align:left">
+          <p><strong>Order ID:</strong> ${data.orderID}</p>
+          <p><strong>Status:</strong> COMPLETED</p>
+          <p>Your transaction has been securely processed.</p>
+        </div>
+      `,
+      icon: "success",
+      confirmButtonText: "Continue",
+      confirmButtonColor: "#6366f1",
+      background: "#1e293b",
+      color: "#ffffff",
+      iconColor: "#22c55e",
+    });
+
     fetchPayments();
-  }}
+
+  } catch (error) {
+    Swal.fire({
+      title: "Payment Failed",
+      text: "Something went wrong while processing your payment.",
+      icon: "error",
+      confirmButtonColor: "#ef4444",
+      background: "#1e293b",
+      color: "#ffffff",
+    });
+  }
+}}
+
 />
 
               </div>
@@ -190,6 +251,49 @@ const res = await fetch(`${API_URL}/api/payment/payments`);
 }
 
 const styles: any = {
+  sandboxCard: {
+  marginTop: "25px",
+  padding: "20px",
+  borderRadius: "18px",
+  background: "rgba(99,102,241,0.08)",
+  border: "1px solid rgba(99,102,241,0.3)",
+  backdropFilter: "blur(12px)",
+},
+
+sandboxTitle: {
+  color: "#6366f1",
+  marginBottom: "15px",
+  fontSize: "16px",
+  fontWeight: 600,
+},
+
+credentialRow: {
+  display: "flex",
+  justifyContent: "space-between",
+  marginBottom: "10px",
+},
+
+credentialLabel: {
+  color: "#94a3b8",
+  fontSize: "13px",
+},
+
+credentialValue: {
+  color: "#ffffff",
+  fontSize: "13px",
+  fontWeight: 600,
+  background: "rgba(255,255,255,0.08)",
+  padding: "4px 8px",
+  borderRadius: "6px",
+},
+
+sandboxNote: {
+  marginTop: "12px",
+  fontSize: "12px",
+  color: "#94a3b8",
+  lineHeight: 1.5,
+},
+
   page: {
     minHeight: "100vh",
     background:
