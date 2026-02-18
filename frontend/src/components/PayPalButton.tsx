@@ -13,14 +13,35 @@ interface Payment {
 const PayPalButton: React.FC = () => {
   const [payments, setPayments] = useState<Payment[]>([]);
 
-  const fetchPayments = async () => {
-  const res = await fetch(
-  `${process.env.REACT_APP_API_URL}/api/payment/payments`
-);
+const API_URL = process.env.REACT_APP_API_URL;
 
+const fetchPayments = async () => {
+  const res = await fetch(`${API_URL}/api/payment/payments`);
+  const data = await res.json();
+  setPayments(data);
+};
+
+<PayPalButtons
+  style={{ layout: "vertical" }}
+  createOrder={async () => {
+    const res = await fetch(
+      `${API_URL}/api/payment/create-order`,
+      { method: "POST" }
+    );
     const data = await res.json();
-    setPayments(data);
-  };
+    return data.id;
+  }}
+  onApprove={async (data) => {
+    await fetch(
+      `${API_URL}/api/payment/capture-order/${data.orderID}`,
+      { method: "POST" }
+    );
+
+    alert("Payment Captured Successfully 🎉");
+    fetchPayments();
+  }}
+/>
+
 
   useEffect(() => {
     fetchPayments();
@@ -30,23 +51,23 @@ const PayPalButton: React.FC = () => {
     <>
       <PayPalButtons
         style={{ layout: "vertical" }}
-        createOrder={async () => {
-          const res = await fetch(
-            "http://localhost:5000/api/payment/create-order",
-            { method: "POST" }
-          );
-          const data = await res.json();
-          return data.id;
-        }}
-        onApprove={async (data) => {
-          await fetch(
-            `http://localhost:5000/api/payment/capture-order/${data.orderID}`,
-            { method: "POST" }
-          );
+       createOrder={async () => {
+  const res = await fetch(
+    `${API_URL}/api/payment/create-order`,
+    { method: "POST" }
+  );
+  const data = await res.json();
+  return data.id;
+}}
 
-          alert("Payment Captured Successfully 🎉");
-          fetchPayments(); // 🔥 refresh list
-        }}
+onApprove={async (data) => {
+  await fetch(
+    `${API_URL}/api/payment/capture-order/${data.orderID}`,
+    { method: "POST" }
+  );
+  fetchPayments();
+}}
+
       />
 
       {/* 🔥 Payment History */}
@@ -64,10 +85,19 @@ const PayPalButton: React.FC = () => {
               borderRadius: "5px",
             }}
           >
-            <p><strong>OrderID:</strong> {payment.orderID}</p>
-            <p><strong>Amount:</strong> {payment.amount} {payment.currency}</p>
-            <p><strong>Status:</strong> {payment.status}</p>
-            <p><strong>Date:</strong> {new Date(payment.createdAt).toLocaleString()}</p>
+            <p>
+              <strong>OrderID:</strong> {payment.orderID}
+            </p>
+            <p>
+              <strong>Amount:</strong> {payment.amount} {payment.currency}
+            </p>
+            <p>
+              <strong>Status:</strong> {payment.status}
+            </p>
+            <p>
+              <strong>Date:</strong>{" "}
+              {new Date(payment.createdAt).toLocaleString()}
+            </p>
           </div>
         ))}
       </div>
