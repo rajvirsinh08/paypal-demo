@@ -147,7 +147,7 @@ const res = await fetch(`${API_URL}/api/payment/payments`);
       throw new Error("Payment capture failed");
     }
 
-    const result = await res.json();
+await res.json();
 
     // 🔥 Professional Enterprise Success Modal
     await Swal.fire({
