@@ -1,21 +1,24 @@
 import app from "../server";
 import mongoose from "mongoose";
 
-let isConnected = false;
+let cached = (global as any).mongoose;
+
+if (!cached) {
+  cached = (global as any).mongoose = { conn: null, promise: null };
+}
 
 async function connectDB() {
-  if (isConnected) return;
+  if (cached.conn) return cached.conn;
 
-  try {
-    const db = await mongoose.connect(process.env.MONGODB_URI!);
-    isConnected = db.connections[0].readyState === 1;
-    console.log("✅ MongoDB Connected");
-  } catch (error) {
-    console.error("❌ MongoDB Connection Error:", error);
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(process.env.MONGODB_URI!);
   }
+
+  cached.conn = await cached.promise;
+  return cached.conn;
 }
 
 export default async function handler(req: any, res: any) {
-  await connectDB();   // 🔥 THIS IS THE IMPORTANT LINE
+  await connectDB();
   return app(req, res);
 }
