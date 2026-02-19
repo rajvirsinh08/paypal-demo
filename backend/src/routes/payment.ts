@@ -75,9 +75,14 @@ router.get("/payments", async (req, res) => {
   try {
     const payments = await Payment.find().sort({ createdAt: -1 });
     res.json(payments);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch payments" });
+  } catch (error: any) {
+    console.error("DB ERROR:", error);
+    res.status(500).json({
+      error: error.message,
+      stack: error.stack,
+    });
   }
 });
+
 
 export default router;

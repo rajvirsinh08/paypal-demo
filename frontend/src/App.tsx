@@ -18,13 +18,23 @@ function App() {
   const [show, setShow] = useState(false);
 const API_URL = process.env.REACT_APP_API_URL!;
 
-  const fetchPayments = async () => {
-const API_URL = process.env.REACT_APP_API_URL;
-
-const res = await fetch(`${API_URL}/api/payment/payments`);
+ const fetchPayments = async () => {
+  try {
+    const res = await fetch(`${API_URL}/api/payment/payments`);
     const data = await res.json();
-    setPayments(data.reverse());
-  };
+
+    if (Array.isArray(data)) {
+      setPayments(data.reverse());
+    } else {
+      console.error("Unexpected response:", data);
+      setPayments([]);
+    }
+  } catch (error) {
+    console.error("Fetch error:", error);
+    setPayments([]);
+  }
+};
+
 
   useEffect(() => {
     fetchPayments();
