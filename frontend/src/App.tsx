@@ -1,4 +1,4 @@
-  import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import CountUp from "react-countup";
 import Swal from "sweetalert2";
@@ -16,25 +16,24 @@ interface Payment {
 function App() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [show, setShow] = useState(false);
-const API_URL = process.env.REACT_APP_API_URL!;
+  const API_URL = process.env.REACT_APP_API_URL!;
 
- const fetchPayments = async () => {
-  try {
-    const res = await fetch(`${API_URL}/api/payment/payments`);
-    const data = await res.json();
+  const fetchPayments = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/payment/payments`);
+      const data = await res.json();
 
-    if (Array.isArray(data)) {
-      setPayments(data.reverse());
-    } else {
-      console.error("Unexpected response:", data);
+      if (Array.isArray(data)) {
+        setPayments(data.reverse());
+      } else {
+        console.error("Unexpected response:", data);
+        setPayments([]);
+      }
+    } catch (error) {
+      console.error("Fetch error:", error);
       setPayments([]);
     }
-  } catch (error) {
-    console.error("Fetch error:", error);
-    setPayments([]);
-  }
-};
-
+  };
 
   useEffect(() => {
     fetchPayments();
@@ -109,44 +108,43 @@ const API_URL = process.env.REACT_APP_API_URL!;
 
               <div style={{ marginTop: 30 }}>
                 {/* 🧪 Sandbox Credentials Card */}
-<div style={styles.sandboxCard}>
-  <h4 style={styles.sandboxTitle}>Sandbox Test Account</h4>
+                <div style={styles.sandboxCard}>
+                  <h4 style={styles.sandboxTitle}>Sandbox Test Account</h4>
 
-  <div style={styles.credentialRow}>
-    <span style={styles.credentialLabel}>Email</span>
-    <span style={styles.credentialValue}>
-      sb-u3m9y49435222@personal.example.com
-    </span>
-  </div>
+                  <div style={styles.credentialRow}>
+                    <span style={styles.credentialLabel}>Email</span>
+                    <span style={styles.credentialValue}>
+                      sb-u3m9y49435222@personal.example.com
+                    </span>
+                  </div>
 
-  <div style={styles.credentialRow}>
-    <span style={styles.credentialLabel}>Password</span>
-    <span style={styles.credentialValue}>
-      eY&.!2lV
-    </span>
-  </div>
+                  <div style={styles.credentialRow}>
+                    <span style={styles.credentialLabel}>Password</span>
+                    <span style={styles.credentialValue}>eY&.!2lV</span>
+                  </div>
 
-  <p style={styles.sandboxNote}>
-    Use these credentials in the PayPal popup to test payments in sandbox mode.
-  </p>
-</div>
+                  <p style={styles.sandboxNote}>
+                    Use these credentials in the PayPal popup to test payments
+                    in sandbox mode.
+                  </p>
+                </div>
 
-             <PayPalButtons
-  style={{ layout: "vertical" }}
-  createOrder={async () => {
-    const res = await fetch(
-      `${API_URL}/api/payment/create-order`,
-      { method: "POST" }
-    );
+                <PayPalButtons
+                  style={{ layout: "vertical" }}
+                  createOrder={async () => {
+                    const res = await fetch(
+                      `${API_URL}/api/payment/create-order`,
+                      { method: "POST" },
+                    );
 
-    if (!res.ok) {
-      throw new Error("Failed to create order");
-    }
+                    if (!res.ok) {
+                      throw new Error("Failed to create order");
+                    }
 
-    const data = await res.json();
-    return data.id;
-  }}
- onApprove={async (data) => {
+                    const data = await res.json();
+                    return data.id;
+                  }}
+              onApprove={async (data) => {
   try {
     const res = await fetch(
       `${API_URL}/api/payment/capture-order/${data.orderID}`,
@@ -157,10 +155,13 @@ const API_URL = process.env.REACT_APP_API_URL!;
       throw new Error("Payment capture failed");
     }
 
-await res.json();
+    await res.json();
 
-    // 🔥 Professional Enterprise Success Modal
-    await Swal.fire({
+    // ✅ Refresh first
+    fetchPayments();
+
+    // ✅ DO NOT await Swal (important)
+    Swal.fire({
       title: "Payment Completed",
       html: `
         <div style="text-align:left">
@@ -177,9 +178,11 @@ await res.json();
       iconColor: "#22c55e",
     });
 
-    fetchPayments();
+    return; // 🔥 VERY IMPORTANT (closes popup)
 
   } catch (error) {
+    console.error(error);
+
     Swal.fire({
       title: "Payment Failed",
       text: "Something went wrong while processing your payment.",
@@ -188,11 +191,12 @@ await res.json();
       background: "#1e293b",
       color: "#ffffff",
     });
+
+    throw error; // important for PayPal
   }
 }}
 
-/>
-
+                />
               </div>
             </div>
 
@@ -240,9 +244,7 @@ await res.json();
 
                       <div>
                         <span style={styles.label}>Payer ID</span>
-                        <p style={styles.value}>
-                          {payment.payerID || "N/A"}
-                        </p>
+                        <p style={styles.value}>{payment.payerID || "N/A"}</p>
                       </div>
                     </div>
                   </div>
@@ -262,52 +264,51 @@ await res.json();
 
 const styles: any = {
   sandboxCard: {
-  marginTop: "25px",
-  padding: "20px",
-  borderRadius: "18px",
-  background: "rgba(99,102,241,0.08)",
-  border: "1px solid rgba(99,102,241,0.3)",
-  backdropFilter: "blur(12px)",
-},
+    marginTop: "25px",
+    padding: "20px",
+    borderRadius: "18px",
+    background: "rgba(99,102,241,0.08)",
+    border: "1px solid rgba(99,102,241,0.3)",
+    backdropFilter: "blur(12px)",
+  },
 
-sandboxTitle: {
-  color: "#6366f1",
-  marginBottom: "15px",
-  fontSize: "16px",
-  fontWeight: 600,
-},
+  sandboxTitle: {
+    color: "#6366f1",
+    marginBottom: "15px",
+    fontSize: "16px",
+    fontWeight: 600,
+  },
 
-credentialRow: {
-  display: "flex",
-  justifyContent: "space-between",
-  marginBottom: "10px",
-},
+  credentialRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginBottom: "10px",
+  },
 
-credentialLabel: {
-  color: "#94a3b8",
-  fontSize: "13px",
-},
+  credentialLabel: {
+    color: "#94a3b8",
+    fontSize: "13px",
+  },
 
-credentialValue: {
-  color: "#ffffff",
-  fontSize: "13px",
-  fontWeight: 600,
-  background: "rgba(255,255,255,0.08)",
-  padding: "4px 8px",
-  borderRadius: "6px",
-},
+  credentialValue: {
+    color: "#ffffff",
+    fontSize: "13px",
+    fontWeight: 600,
+    background: "rgba(255,255,255,0.08)",
+    padding: "4px 8px",
+    borderRadius: "6px",
+  },
 
-sandboxNote: {
-  marginTop: "12px",
-  fontSize: "12px",
-  color: "#94a3b8",
-  lineHeight: 1.5,
-},
+  sandboxNote: {
+    marginTop: "12px",
+    fontSize: "12px",
+    color: "#94a3b8",
+    lineHeight: 1.5,
+  },
 
   page: {
     minHeight: "100vh",
-    background:
-      "linear-gradient(135deg,#0f172a 0%,#111827 40%,#1e293b 100%)",
+    background: "linear-gradient(135deg,#0f172a 0%,#111827 40%,#1e293b 100%)",
     padding: "40px 20px",
     fontFamily: "'Inter', sans-serif",
     display: "flex",
