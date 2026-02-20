@@ -41,7 +41,7 @@ async function connectDB() {
       serverSelectionTimeoutMS: 5000,
     });
   }
-
+console.log("ENV MONGODB_URI:", process.env.MONGODB_URI);
   cached.conn = await cached.promise;
   return cached.conn;
 }
