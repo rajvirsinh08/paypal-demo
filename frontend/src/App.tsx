@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import CountUp from "react-countup";
 import Swal from "sweetalert2";
@@ -18,27 +18,27 @@ function App() {
   const [show, setShow] = useState(false);
   const API_URL = process.env.REACT_APP_API_URL!;
 
-  const fetchPayments = async () => {
-    try {
-      const res = await fetch(`${API_URL}/api/payment/payments`);
-      const data = await res.json();
+const fetchPayments = useCallback(async () => {
+  try {
+    const res = await fetch(`${API_URL}/api/payment/payments`);
+    const data = await res.json();
 
-      if (Array.isArray(data)) {
-        setPayments(data.reverse());
-      } else {
-        console.error("Unexpected response:", data);
-        setPayments([]);
-      }
-    } catch (error) {
-      console.error("Fetch error:", error);
+    if (Array.isArray(data)) {
+      setPayments(data.reverse());
+    } else {
+      console.error("Unexpected response:", data);
       setPayments([]);
     }
-  };
-
-  useEffect(() => {
-    fetchPayments();
-    setTimeout(() => setShow(true), 200);
-  }, []);
+  } catch (error) {
+    console.error("Fetch error:", error);
+    setPayments([]);
+  }
+}, [API_URL]);
+useEffect(() => {
+  fetchPayments();
+  const timer = setTimeout(() => setShow(true), 200);
+  return () => clearTimeout(timer);
+}, [fetchPayments]);
 
   const totalRevenue = payments
     .filter((p) => p.status === "COMPLETED")
